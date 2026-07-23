@@ -202,7 +202,7 @@ a {
 
 .console-action-buttons {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 8px;
   align-items: center;
 }
@@ -842,6 +842,10 @@ h1 span {
 
 .query-library {
   padding: 86px 0 14px;
+}
+
+.query-library[hidden] {
+  display: none;
 }
 
 .query-library-heading {

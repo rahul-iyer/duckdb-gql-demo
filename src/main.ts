@@ -73,6 +73,9 @@ const buildCsrButton =
 const algorithmQueryButton = requiredElement<HTMLButtonElement>(
   "#algorithm-query-step"
 );
+const moreQueriesButton =
+  requiredElement<HTMLButtonElement>("#more-queries-step");
+const queryLibrary = requiredElement<HTMLElement>("#more-queries");
 const selectedStepLabel =
   requiredElement<HTMLSpanElement>("#selected-step-label");
 const selectedStepQuery =
@@ -84,6 +87,15 @@ const selectedStepCopyLabel =
 const selectedStepCopyStatus =
   requiredElement<HTMLSpanElement>("#selected-step-copy-status");
 const sampleResult = requiredElement<HTMLSpanElement>("#sample-result");
+
+const demoStepButtons = [
+  createGraphButton,
+  loadGraphButton,
+  matchQueryButton,
+  buildCsrButton,
+  algorithmQueryButton,
+  moreQueriesButton
+];
 
 let activeDatabase: duckdb.AsyncDuckDB | null = null;
 let airRoutesFilesRegistered = false;
@@ -179,13 +191,7 @@ async function startPlayground(): Promise<void> {
   });
 
   activeDatabase = db;
-  for (const button of [
-    createGraphButton,
-    loadGraphButton,
-    matchQueryButton,
-    buildCsrButton,
-    algorithmQueryButton
-  ]) {
+  for (const button of demoStepButtons) {
     button.disabled = false;
   }
   setStatus("Ready", "ready");
@@ -197,13 +203,7 @@ shellContainer.addEventListener("pointerdown", () => {
 });
 
 async function selectDemoStep(step: DemoStep): Promise<void> {
-  for (const button of [
-    createGraphButton,
-    loadGraphButton,
-    matchQueryButton,
-    buildCsrButton,
-    algorithmQueryButton
-  ]) {
+  for (const button of demoStepButtons) {
     button.dataset.state = button === step.button ? "selected" : "";
   }
   selectedStepLabel.textContent = step.label;
@@ -267,6 +267,34 @@ for (const step of demoSteps) {
   step.button.addEventListener("click", () => {
     void selectDemoStep(step);
   });
+}
+
+function revealMoreQueries(scroll: boolean): void {
+  for (const button of demoStepButtons) {
+    button.dataset.state = button === moreQueriesButton ? "selected" : "";
+  }
+  queryLibrary.hidden = false;
+  moreQueriesButton.setAttribute("aria-expanded", "true");
+  consoleActionHelp.textContent =
+    "More Air Routes examples are ready below";
+  sampleResult.textContent = "Choose a query and use its Copy button";
+
+  if (scroll) {
+    window.requestAnimationFrame(() => {
+      queryLibrary.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+}
+
+moreQueriesButton.addEventListener("click", () => {
+  revealMoreQueries(true);
+});
+
+if (
+  window.location.hash === "#more-queries" ||
+  window.location.hash === "#more-queries-title"
+) {
+  revealMoreQueries(false);
 }
 
 for (const button of document.querySelectorAll<HTMLButtonElement>(

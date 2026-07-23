@@ -181,6 +181,17 @@
                 <span class="step-number">5</span>
                 Run PageRank
               </button>
+              <button
+                id="more-queries-step"
+                class="demo-step-button"
+                type="button"
+                aria-controls="more-queries"
+                aria-expanded="false"
+                disabled
+              >
+                <span class="step-number">6</span>
+                More queries
+              </button>
             </div>
             <div class="console-query-preview">
               <div class="console-query-preview-heading">
@@ -235,7 +246,12 @@ CREATE GRAPH air_routes ANY;</code></pre>
           </div>
         </section>
 
-        <section class="query-library" aria-labelledby="more-queries-title">
+        <section
+          id="more-queries"
+          class="query-library"
+          aria-labelledby="more-queries-title"
+          hidden
+        >
           <div class="query-library-heading">
             <div>
               <span class="eyebrow">Keep exploring</span>
