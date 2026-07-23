@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Explore property graphs locally in your browser with DuckGQL and DuckDB-Wasm."
+    />
+    <meta name="theme-color" content="#080b0d" />
+    <title>DuckGQL — Graph queries in your browser</title>
+  </head>
+  <body>
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
+
+    <div id="app">
+      <header class="masthead">
+        <a class="brand" href="./" aria-label="DuckGQL playground home">
+          <svg
+            class="brand-mark"
+            viewBox="0 0 40 40"
+            fill="none"
+            aria-hidden="true"
+          >
+            <rect x="0.5" y="0.5" width="39" height="39" rx="11.5"></rect>
+            <circle cx="13" cy="14" r="3.25"></circle>
+            <circle cx="27" cy="12" r="3.25"></circle>
+            <circle cx="25" cy="27" r="3.25"></circle>
+            <path d="M15.8 12.9 24 12.2M14.8 16.3l8.5 8.2M26.5 15.2l-1 8.5"></path>
+          </svg>
+          <span class="brand-wordmark">DuckGQL</span>
+          <span class="brand-tag">Playground</span>
+        </a>
+
+        <nav class="nav-actions" aria-label="Primary navigation">
+          <div class="runtime-status" role="status" aria-live="polite">
+            <span id="status-dot" class="status-dot is-loading"></span>
+            <span id="status-text">Starting engine</span>
+          </div>
+        </nav>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div class="hero-copy">
+            <div class="hero-kicker">
+              <span class="kicker-dot"></span>
+              DuckDB meets graph query language
+            </div>
+            <h1>
+              Query Graph data.
+              <span>Right in your browser.</span>
+            </h1>
+            <p class="lede">
+              A zero-install graph playground powered by DuckDB, DuckGQL, and
+              WebAssembly. Your queries and data stay on your device.
+            </p>
+            <div class="hero-meta" aria-label="Runtime details">
+              <span>
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="m6.2 10.3 2.5 2.5 5.3-5.6"></path>
+                </svg>
+                No setup
+              </span>
+              <span>
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="m6.2 10.3 2.5 2.5 5.3-5.6"></path>
+                </svg>
+                Local execution
+              </span>
+              <span>
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="m6.2 10.3 2.5 2.5 5.3-5.6"></path>
+                </svg>
+                Real DuckGQL
+              </span>
+            </div>
+          </div>
+
+          <aside class="query-card">
+            <div class="query-card-header">
+              <div>
+                <span class="eyebrow">Quick start</span>
+                <strong>Your first graph query</strong>
+              </div>
+              <button id="copy-query" class="copy-button" type="button">
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <rect x="6.5" y="6.5" width="9" height="9" rx="2"></rect>
+                  <path d="M13.5 6.5v-2a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"></path>
+                </svg>
+                <span id="copy-label">Copy</span>
+              </button>
+            </div>
+            <pre><code id="sample-query"><span class="code-keyword">MATCH</span> (a:<span class="code-type">airport</span>)-[r:<span class="code-type">route</span>]-&gt;(b:<span class="code-type">airport</span>)
+<span class="code-keyword">WHERE</span> a.code = <span class="code-string">'ATL'</span>
+<span class="code-keyword">RETURN</span> a.code <span class="code-keyword">AS</span> origin,
+       b.code <span class="code-keyword">AS</span> destination,
+       r.dist <span class="code-keyword">AS</span> miles
+<span class="code-keyword">LIMIT</span> 10;</code></pre>
+            <div class="query-card-footer">
+              <span class="command-key">↵</span>
+              Paste into the console and press Enter
+            </div>
+          </aside>
+        </section>
+
+        <section
+          id="console"
+          class="console-panel"
+          data-state="loading"
+          aria-label="Interactive DuckDB shell"
+        >
+          <div class="console-heading">
+            <div class="console-title">
+              <div class="traffic-lights" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </div>
+              <span>DuckGQL Console</span>
+            </div>
+            <div class="console-runtime">
+              <span class="runtime-chip">
+                <span class="runtime-chip-dot"></span>
+                In-memory
+              </span>
+              <span>DuckDB 1.5.4</span>
+              <span>Wasm EH</span>
+            </div>
+          </div>
+
+          <div class="console-actions" aria-label="Playground examples">
+            <div class="console-action-copy">
+              <span class="eyebrow">Guided demo</span>
+              <span id="console-action-help">
+                Select a step, then use Copy command when you are ready
+              </span>
+            </div>
+            <div class="console-action-buttons">
+              <button
+                id="create-graph-step"
+                class="demo-step-button"
+                type="button"
+                disabled
+              >
+                <span class="step-number">1</span>
+                Create graph
+              </button>
+              <button
+                id="load-graph-step"
+                class="demo-step-button"
+                type="button"
+                disabled
+              >
+                <span class="step-number">2</span>
+                Load graph
+              </button>
+              <button
+                id="match-query-step"
+                class="demo-step-button"
+                type="button"
+                disabled
+              >
+                <span class="step-number">3</span>
+                Run query
+              </button>
+              <button
+                id="build-csr-step"
+                class="demo-step-button"
+                type="button"
+                disabled
+              >
+                <span class="step-number">4</span>
+                Build CSR
+              </button>
+              <button
+                id="algorithm-query-step"
+                class="demo-step-button"
+                type="button"
+                disabled
+              >
+                <span class="step-number">5</span>
+                Run PageRank
+              </button>
+            </div>
+            <div class="console-query-preview">
+              <div class="console-query-preview-heading">
+                <span id="selected-step-label">1 · Create graph</span>
+                <div class="console-query-preview-actions">
+                  <span id="selected-step-copy-status">Ready to copy</span>
+                  <button
+                    id="copy-selected-step"
+                    class="copy-button preview-copy-button"
+                    type="button"
+                  >
+                    <svg viewBox="0 0 20 20" aria-hidden="true">
+                      <rect x="6.5" y="6.5" width="9" height="9" rx="2"></rect>
+                      <path d="M13.5 6.5v-2a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"></path>
+                    </svg>
+                    <span id="selected-step-copy-label">Copy command</span>
+                  </button>
+                </div>
+              </div>
+              <pre><code id="selected-step-query">DROP GRAPH IF EXISTS air_routes;
+CREATE GRAPH air_routes ANY;</code></pre>
+            </div>
+          </div>
+
+          <div class="console-body">
+            <div id="shell" class="shell"></div>
+            <div class="console-loading" aria-hidden="true">
+              <div class="loader-orbit">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <p>Preparing your graph workspace</p>
+              <small>The first load downloads the WebAssembly runtime</small>
+            </div>
+            <div id="startup-error" class="startup-error" hidden>
+              <div class="error-icon">!</div>
+              <div>
+                <strong>DuckGQL could not start</strong>
+                <p>The console returned the following error:</p>
+                <pre id="error-detail"></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="console-footer">
+            <span>
+              <span class="footer-pulse"></span>
+              <span id="sample-result">Start with Create graph</span>
+            </span>
+            <span>Data stays in this browser session</span>
+          </div>
+        </section>
+
+        <section id="sample-data" class="feature-grid">
+          <article class="feature-card feature-card-wide">
+            <div class="feature-heading">
+              <span class="feature-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="6" cy="12" r="3"></circle>
+                  <circle cx="18" cy="6" r="3"></circle>
+                  <circle cx="18" cy="18" r="3"></circle>
+                  <path d="m8.8 10.8 6.4-3.6M8.8 13.2l6.4 3.6"></path>
+                </svg>
+              </span>
+              <div>
+                <span class="eyebrow">Air-routes sample</span>
+                <h2>3,749 vertices and 57,645 routes</h2>
+              </div>
+            </div>
+            <div class="graph-preview" aria-label="Sample airport route">
+              <div class="airport-node">
+                <span id="preview-origin">ATL</span>
+                <div><strong>Atlanta</strong><small>airport · US-GA</small></div>
+              </div>
+              <div class="relationship">
+                <span id="preview-distance">ROUTE</span>
+                <i></i>
+              </div>
+              <div class="airport-node">
+                <span id="preview-destination">AUS</span>
+                <div><strong>Austin</strong><small>airport · US-TX</small></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="feature-card">
+            <span class="feature-number">01</span>
+            <h2>Runs locally</h2>
+            <p>
+              The database engine and graph extension execute in a dedicated
+              Web Worker on your device.
+            </p>
+          </article>
+
+          <article class="feature-card">
+            <span class="feature-number">02</span>
+            <h2>Built for the web</h2>
+            <p>
+              The same DuckGQL C++ extension is cross-compiled into a portable
+              WebAssembly module.
+            </p>
+          </article>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <div class="footer-brand">
+          <svg class="brand-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+            <rect x="0.5" y="0.5" width="39" height="39" rx="11.5"></rect>
+            <circle cx="13" cy="14" r="3.25"></circle>
+            <circle cx="27" cy="12" r="3.25"></circle>
+            <circle cx="25" cy="27" r="3.25"></circle>
+            <path d="M15.8 12.9 24 12.2M14.8 16.3l8.5 8.2M26.5 15.2l-1 8.5"></path>
+          </svg>
+          <div><strong>DuckGQL</strong><span>Graph queries for DuckDB</span></div>
+        </div>
+        <div class="footer-note">
+          <span>Experimental software</span>
+          <span class="footer-divider"></span>
+          <span>Session data clears when this page closes</span>
+        </div>
+      </footer>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
