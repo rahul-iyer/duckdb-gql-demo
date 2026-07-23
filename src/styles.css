@@ -840,6 +840,104 @@ h1 span {
   color: var(--lime);
 }
 
+.query-library {
+  padding: 86px 0 14px;
+}
+
+.query-library-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 48px;
+  margin-bottom: 28px;
+}
+
+.query-library-heading .eyebrow {
+  color: var(--lime);
+}
+
+.query-library-heading h2 {
+  margin: 0;
+  font-size: clamp(28px, 3.2vw, 44px);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+}
+
+.query-library-heading p {
+  max-width: 520px;
+  margin: 0 0 3px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.query-library-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.try-query-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 42%),
+    var(--surface-soft);
+}
+
+.try-query-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px 22px 10px;
+}
+
+.query-number {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--lime);
+  font: 500 9px/1 var(--mono);
+  letter-spacing: 0.06em;
+}
+
+.try-query-card h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.try-query-card > p {
+  min-height: 42px;
+  margin: 0;
+  padding: 0 22px 14px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.try-query-copy {
+  flex: 0 0 auto;
+}
+
+.try-query-card pre {
+  min-height: 238px;
+  max-height: 300px;
+  margin: 0;
+  padding: 20px 22px;
+  overflow: auto;
+  border-top: 1px solid var(--line);
+  background:
+    linear-gradient(90deg, rgba(200, 255, 98, 0.025), transparent 38%),
+    rgba(5, 8, 9, 0.55);
+  color: #d9e0dc;
+  font: 400 12px/1.7 var(--mono);
+  white-space: pre;
+}
+
 .feature-grid {
   display: grid;
   grid-template-columns: 1.5fr 0.75fr 0.75fr;
@@ -1083,6 +1181,12 @@ h1 span {
     max-width: 680px;
   }
 
+  .query-library-heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 16px;
+  }
+
   .feature-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -1165,6 +1269,19 @@ h1 span {
 
   .console-footer a {
     display: none;
+  }
+
+  .query-library {
+    padding-top: 62px;
+  }
+
+  .query-library-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .try-query-card pre {
+    min-height: auto;
+    font-size: 10.5px;
   }
 
   .feature-grid {

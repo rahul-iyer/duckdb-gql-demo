@@ -58,6 +58,46 @@ try {
       LIMIT 10
     `);
     console.log(sampleRoute.toString());
+    const moreQueries = [
+      `
+        MATCH (origin:airport)-[route:route]->(destination:airport)
+        WHERE origin.code = 'ATL'
+        RETURN destination.code AS destination,
+               destination.city AS city,
+               route.dist AS miles
+        ORDER BY miles DESC
+        LIMIT 10
+      `,
+      `
+        MATCH (origin:airport)-[route:route]->(destination:airport)
+        WHERE origin.country = 'US' AND destination.country = 'JP'
+        RETURN origin.code AS origin,
+               destination.code AS destination,
+               route.dist AS miles
+        ORDER BY miles DESC
+        LIMIT 10
+      `,
+      `
+        MATCH (origin:airport)-[:route]->(connection:airport)-[:route]->(destination:airport)
+        WHERE origin.code = 'ATL' AND destination.code = 'LHR'
+        RETURN connection.code AS connection,
+               connection.city AS city
+        ORDER BY connection
+        LIMIT 20
+      `,
+      `
+        MATCH (origin:airport)-[:route]->(destination:airport)
+        RETURN origin.code AS airport,
+               COUNT(*) AS outbound_routes
+        GROUP BY origin
+        ORDER BY outbound_routes DESC
+        LIMIT 10
+      `
+    ];
+    for (const query of moreQueries) {
+      const result = await connection.query(query);
+      console.log(result.toString());
+    }
     await connection.query("CALL gql_build_csr('air_routes')");
     const pageRank = await connection.query(`
       CALL algo.pagerank(

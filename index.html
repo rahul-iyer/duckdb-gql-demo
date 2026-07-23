@@ -235,6 +235,133 @@ CREATE GRAPH air_routes ANY;</code></pre>
           </div>
         </section>
 
+        <section class="query-library" aria-labelledby="more-queries-title">
+          <div class="query-library-heading">
+            <div>
+              <span class="eyebrow">Keep exploring</span>
+              <h2 id="more-queries-title">More Air Routes queries to try</h2>
+            </div>
+            <p>
+              Complete Create graph and Load graph first. Then copy any query
+              below, paste it into the console, and press Enter.
+            </p>
+          </div>
+
+          <div class="query-library-grid">
+            <article class="try-query-card">
+              <div class="try-query-card-heading">
+                <div>
+                  <span class="query-number">01 · FILTER + SORT</span>
+                  <h3>Longest routes from Atlanta</h3>
+                </div>
+                <button
+                  class="copy-button try-query-copy"
+                  type="button"
+                  data-copy-query="query-longest-routes"
+                >
+                  <svg viewBox="0 0 20 20" aria-hidden="true">
+                    <rect x="6.5" y="6.5" width="9" height="9" rx="2"></rect>
+                    <path d="M13.5 6.5v-2a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"></path>
+                  </svg>
+                  <span>Copy</span>
+                </button>
+              </div>
+              <p>Find the ten farthest direct destinations served from ATL.</p>
+              <pre><code id="query-longest-routes">MATCH (origin:airport)-[route:route]-&gt;(destination:airport)
+WHERE origin.code = 'ATL'
+RETURN destination.code AS destination,
+       destination.city AS city,
+       route.dist AS miles
+ORDER BY miles DESC
+LIMIT 10;</code></pre>
+            </article>
+
+            <article class="try-query-card">
+              <div class="try-query-card-heading">
+                <div>
+                  <span class="query-number">02 · PROPERTY FILTERS</span>
+                  <h3>Routes from the US to Japan</h3>
+                </div>
+                <button
+                  class="copy-button try-query-copy"
+                  type="button"
+                  data-copy-query="query-country-routes"
+                >
+                  <svg viewBox="0 0 20 20" aria-hidden="true">
+                    <rect x="6.5" y="6.5" width="9" height="9" rx="2"></rect>
+                    <path d="M13.5 6.5v-2a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"></path>
+                  </svg>
+                  <span>Copy</span>
+                </button>
+              </div>
+              <p>Compare the longest direct airport pairs between two countries.</p>
+              <pre><code id="query-country-routes">MATCH (origin:airport)-[route:route]-&gt;(destination:airport)
+WHERE origin.country = 'US'
+  AND destination.country = 'JP'
+RETURN origin.code AS origin,
+       destination.code AS destination,
+       route.dist AS miles
+ORDER BY miles DESC
+LIMIT 10;</code></pre>
+            </article>
+
+            <article class="try-query-card">
+              <div class="try-query-card-heading">
+                <div>
+                  <span class="query-number">03 · TWO-HOP PATH</span>
+                  <h3>Connect Atlanta to London</h3>
+                </div>
+                <button
+                  class="copy-button try-query-copy"
+                  type="button"
+                  data-copy-query="query-one-stop-routes"
+                >
+                  <svg viewBox="0 0 20 20" aria-hidden="true">
+                    <rect x="6.5" y="6.5" width="9" height="9" rx="2"></rect>
+                    <path d="M13.5 6.5v-2a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"></path>
+                  </svg>
+                  <span>Copy</span>
+                </button>
+              </div>
+              <p>Discover airports that connect ATL to LHR with one stop.</p>
+              <pre><code id="query-one-stop-routes">MATCH (origin:airport)-[:route]-&gt;(connection:airport)-[:route]-&gt;(destination:airport)
+WHERE origin.code = 'ATL'
+  AND destination.code = 'LHR'
+RETURN connection.code AS connection,
+       connection.city AS city
+ORDER BY connection
+LIMIT 20;</code></pre>
+            </article>
+
+            <article class="try-query-card">
+              <div class="try-query-card-heading">
+                <div>
+                  <span class="query-number">04 · AGGREGATION</span>
+                  <h3>Busiest airports by routes</h3>
+                </div>
+                <button
+                  class="copy-button try-query-copy"
+                  type="button"
+                  data-copy-query="query-busiest-airports"
+                >
+                  <svg viewBox="0 0 20 20" aria-hidden="true">
+                    <rect x="6.5" y="6.5" width="9" height="9" rx="2"></rect>
+                    <path d="M13.5 6.5v-2a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"></path>
+                  </svg>
+                  <span>Copy</span>
+                </button>
+              </div>
+              <p>Group route matches to rank airports by outbound connections.</p>
+              <pre><code id="query-busiest-airports">MATCH (origin:airport)-[:route]-&gt;(destination:airport)
+RETURN origin.code AS airport,
+       COUNT(*) AS outbound_routes
+GROUP BY origin
+ORDER BY outbound_routes DESC
+LIMIT 10;</code></pre>
+            </article>
+          </div>
+        </section>
+
         <section id="sample-data" class="feature-grid">
           <article class="feature-card feature-card-wide">
             <div class="feature-heading">

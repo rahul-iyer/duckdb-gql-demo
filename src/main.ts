@@ -269,6 +269,32 @@ for (const step of demoSteps) {
   });
 }
 
+for (const button of document.querySelectorAll<HTMLButtonElement>(
+  "[data-copy-query]"
+)) {
+  button.addEventListener("click", async () => {
+    const queryId = button.dataset.copyQuery;
+    const query = queryId ? document.getElementById(queryId) : null;
+    const label = button.querySelector<HTMLSpanElement>("span");
+    if (!query || !label) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(query.textContent ?? "");
+      label.textContent = "Copied";
+      sampleResult.textContent = "Air Routes query copied to clipboard";
+      window.requestAnimationFrame(focusShellInput);
+      window.setTimeout(() => {
+        label.textContent = "Copy";
+      }, 1400);
+    } catch (error: unknown) {
+      label.textContent = "Copy failed";
+      sampleResult.textContent = formatError(error);
+    }
+  });
+}
+
 selectedStepCopyButton.addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(selectedStepQuery.textContent ?? "");
