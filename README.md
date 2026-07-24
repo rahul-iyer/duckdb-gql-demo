@@ -29,6 +29,22 @@ npm run preview
 
 The static output is written to `dist/`.
 
+## Analytics
+
+The deployed site supports privacy-friendly Umami analytics. Create a website
+for `duckgql.com` in Umami, then add this GitHub repository variable:
+
+- `UMAMI_WEBSITE_ID`: the website ID shown by Umami
+
+Umami Cloud uses `https://cloud.umami.is/script.js` by default. For a
+self-hosted instance, also set `UMAMI_SCRIPT_URL` to its tracker script URL.
+Without `UMAMI_WEBSITE_ID`, analytics is disabled.
+
+The integration records page views and anonymous interaction events such as
+playground startup, demo-step selection, query copying, and outbound link
+clicks. It never sends SQL text, graph data, email addresses, or other visitor
+identifiers.
+
 ## Refresh the DuckGQL Wasm artifact
 
 ```sh

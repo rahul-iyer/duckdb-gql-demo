@@ -4,7 +4,10 @@ import duckdbEhWasm from "@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url";
 import duckdbEhWorker from "@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url";
 import shellWasm from "@duckdb/duckdb-wasm-shell/dist/shell_bg.wasm?url";
 import "xterm/css/xterm.css";
+import { initializeAnalytics, trackEvent } from "./analytics";
 import "./styles.css";
+
+initializeAnalytics();
 
 const CREATE_GRAPH_QUERY = `DROP GRAPH IF EXISTS air_routes;
 CREATE GRAPH air_routes ANY;`;
@@ -195,6 +198,7 @@ async function startPlayground(): Promise<void> {
     button.disabled = false;
   }
   setStatus("Ready", "ready");
+  trackEvent("playground_ready");
   window.requestAnimationFrame(focusShellInput);
 }
 
@@ -222,10 +226,12 @@ async function selectDemoStep(step: DemoStep): Promise<void> {
     consoleActionHelp.textContent =
       "Command selected — use Copy command when you are ready";
     sampleResult.textContent = `${step.label} selected`;
+    trackEvent("demo_step_selected", { step: step.label });
   } catch (error: unknown) {
     step.button.disabled = false;
     consoleActionHelp.textContent = "Could not prepare this demo step";
     sampleResult.textContent = formatError(error);
+    trackEvent("demo_step_failed", { step: step.label });
   }
 }
 
@@ -288,6 +294,7 @@ function revealMoreQueries(scroll: boolean): void {
 
 moreQueriesButton.addEventListener("click", () => {
   revealMoreQueries(true);
+  trackEvent("more_queries_opened");
 });
 
 if (
@@ -312,6 +319,7 @@ for (const button of document.querySelectorAll<HTMLButtonElement>(
       await navigator.clipboard.writeText(query.textContent ?? "");
       label.textContent = "Copied";
       sampleResult.textContent = "Air Routes query copied to clipboard";
+      trackEvent("query_copied", { query: queryId ?? "unknown" });
       window.requestAnimationFrame(focusShellInput);
       window.setTimeout(() => {
         label.textContent = "Copy";
@@ -332,6 +340,9 @@ selectedStepCopyButton.addEventListener("click", async () => {
       "SQL copied — paste it into the terminal and press Enter";
     sampleResult.textContent =
       `${selectedStepLabel.textContent ?? "Selected step"} SQL copied to clipboard`;
+    trackEvent("demo_step_copied", {
+      step: selectedStepLabel.textContent ?? "unknown"
+    });
     window.requestAnimationFrame(focusShellInput);
     window.setTimeout(() => {
       selectedStepCopyLabel.textContent = "Copy command";
@@ -347,6 +358,7 @@ selectedStepCopyButton.addEventListener("click", async () => {
 copyButton.addEventListener("click", async () => {
   await navigator.clipboard.writeText(sampleQuery.textContent ?? "");
   copyLabel.textContent = "Copied";
+  trackEvent("quick_start_copied");
   window.setTimeout(() => {
     copyLabel.textContent = "Copy";
   }, 1400);
@@ -354,6 +366,7 @@ copyButton.addEventListener("click", async () => {
 
 startPlayground().catch((error: unknown) => {
   console.error(error);
+  trackEvent("playground_startup_failed");
   setStatus("Startup failed", "error");
   shellContainer.hidden = true;
   startupError.hidden = false;
