@@ -1,4 +1,4 @@
-name: Deploy demo to GitHub Pages
+name: Deploy DuckGQL website to GitHub Pages
 
 on:
   push:

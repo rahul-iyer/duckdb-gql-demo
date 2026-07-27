@@ -69,7 +69,7 @@ export default defineConfig({
     ],
     editLink: {
       pattern:
-        "https://github.com/rahul-iyer/duckdb-gql-demo/edit/main/docs/:path",
+        "https://github.com/rahul-iyer/duckdb-gql-website/edit/main/docs/:path",
       text: "Edit this page on GitHub"
     },
     outline: {
