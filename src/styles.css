@@ -1297,6 +1297,14 @@ h1 span {
     padding: 0 10px;
   }
 
+  .docs-link {
+    min-width: auto;
+  }
+
+  .docs-link .source-link-label {
+    display: inline;
+  }
+
   .console-actions {
     grid-template-columns: 1fr;
     gap: 12px;

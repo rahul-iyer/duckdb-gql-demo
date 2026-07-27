@@ -27,7 +27,32 @@ npm run build
 npm run preview
 ```
 
-The static output is written to `dist/`.
+The static output is written to `dist/`. The browser playground is emitted at
+the site root and the documentation site is emitted under `dist/docs/`.
+
+## Documentation
+
+Documentation is written in Markdown under `docs/` and built with VitePress.
+Run the docs-only development server while writing:
+
+```sh
+npm run docs:dev
+```
+
+Build or preview only the documentation:
+
+```sh
+npm run docs:build
+npm run docs:preview
+```
+
+The production URL is <https://duckgql.com/docs/>. Navigation and sidebar
+entries live in `docs/.vitepress/config.ts`; colors and typography live in
+`docs/.vitepress/theme/custom.css`.
+
+The GitHub Pages workflow runs the combined `npm run build` command and uploads
+all of `dist/`, so the playground and documentation are deployed atomically.
+The custom domain is configured in the repository's GitHub Pages settings.
 
 ## Analytics
 

@@ -1,0 +1,48 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap");
+
+:root {
+  --vp-font-family-base: "Manrope", Inter, system-ui, sans-serif;
+  --vp-font-family-mono: "DM Mono", "SFMono-Regular", Consolas, monospace;
+  --vp-c-brand-1: #8bbd2d;
+  --vp-c-brand-2: #78a629;
+  --vp-c-brand-3: #5f8720;
+  --vp-c-brand-soft: rgba(139, 189, 45, 0.14);
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(120deg, #8bbd2d, #2ba678);
+  --vp-home-hero-image-background-image:
+    radial-gradient(circle, rgba(139, 189, 45, 0.24), transparent 64%);
+  --vp-home-hero-image-filter: blur(42px);
+}
+
+.dark {
+  --vp-c-bg: #080b0d;
+  --vp-c-bg-alt: #0d1114;
+  --vp-c-bg-elv: #12171a;
+  --vp-c-bg-soft: #12171a;
+  --vp-c-brand-1: #c8ff62;
+  --vp-c-brand-2: #aee64d;
+  --vp-c-brand-3: #8fca36;
+  --vp-c-brand-soft: rgba(200, 255, 98, 0.12);
+  --vp-c-text-1: #eef2ed;
+  --vp-c-text-2: #b5bfba;
+  --vp-c-text-3: #8d9994;
+  --vp-c-divider: rgba(255, 255, 255, 0.09);
+  --vp-c-gutter: rgba(255, 255, 255, 0.06);
+  --vp-code-block-bg: #090d0f;
+}
+
+.VPNavBarTitle .logo {
+  width: 30px;
+  height: 30px;
+}
+
+.VPHomeHero .text {
+  max-width: 720px;
+}
+
+.VPFeature {
+  border-color: var(--vp-c-divider);
+  background:
+    linear-gradient(135deg, var(--vp-c-brand-soft), transparent 48%),
+    var(--vp-c-bg-soft);
+}

@@ -5,7 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "tsc --noEmit && vite build",
+    "build": "npm run build:playground && npm run docs:build",
+    "build:playground": "tsc --noEmit && vite build",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
     "preview": "vite preview --host 127.0.0.1",
     "smoke": "node scripts/smoke-test.mjs"
   },
@@ -16,6 +20,12 @@
   "devDependencies": {
     "typescript": "^5.8.3",
     "vite": "^7.0.0",
+    "vitepress": "1.6.4",
     "web-worker": "^1.2.0"
+  },
+  "overrides": {
+    "vitepress": {
+      "vite": "6.4.3"
+    }
   }
 }
