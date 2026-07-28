@@ -549,7 +549,7 @@ LIMIT 10;</code></pre>
               <div class="try-query-card-heading">
                 <div>
                   <span class="query-number">08 · STRONGLY CONNECTED COMPONENTS</span>
-                  <h3>Small mutually reachable route islands</h3>
+                  <h3>Largest mutually reachable route regions</h3>
                 </div>
                 <button
                   class="copy-button try-query-copy"
@@ -563,14 +563,14 @@ LIMIT 10;</code></pre>
                   <span>Copy</span>
                 </button>
               </div>
-              <p>Reveal the smallest groups whose airports can all reach one another.</p>
+              <p>Summarize each mutually reachable airport region once, largest first.</p>
               <pre><code id="query-strong-components">CALL algo.scc(
     'air_routes',
     vertex_label := 'airport'
 )
-YIELD code, city, country, component_id, component_size
-RETURN code, city, country, component_id, component_size
-ORDER BY component_size ASC, code ASC
+YIELD component_id, component_size
+RETURN DISTINCT component_id, component_size
+ORDER BY component_size DESC
 LIMIT 20;</code></pre>
             </article>
           </div>

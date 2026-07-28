@@ -148,9 +148,9 @@ try {
           'air_routes',
           vertex_label := 'airport'
       )
-      YIELD code, city, country, component_id, component_size
-      RETURN code, city, country, component_id, component_size
-      ORDER BY component_size ASC, code ASC
+      YIELD component_id, component_size
+      RETURN DISTINCT component_id, component_size
+      ORDER BY component_size DESC
       LIMIT 20
     `);
     console.log(stronglyConnected.toString());
