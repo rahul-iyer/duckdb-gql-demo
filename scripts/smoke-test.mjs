@@ -132,6 +132,28 @@ try {
       LIMIT 10
     `);
     console.log(degree.toString());
+    const triangles = await connection.query(`
+      CALL algo.triangle_count(
+          'air_routes',
+          vertex_label := 'airport'
+      )
+      YIELD code, city, country, triangle_count, degree, local_clustering_coefficient
+      RETURN code, city, country, triangle_count, degree, local_clustering_coefficient
+      ORDER BY triangle_count DESC, code ASC
+      LIMIT 10
+    `);
+    console.log(triangles.toString());
+    const stronglyConnected = await connection.query(`
+      CALL algo.scc(
+          'air_routes',
+          vertex_label := 'airport'
+      )
+      YIELD code, city, country, component_id, component_size
+      RETURN code, city, country, component_id, component_size
+      ORDER BY component_size ASC, code ASC
+      LIMIT 20
+    `);
+    console.log(stronglyConnected.toString());
   } finally {
     await connection.close();
   }

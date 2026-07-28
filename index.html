@@ -513,6 +513,66 @@ RETURN code, city, country, out_degree, in_degree, total_degree
 ORDER BY total_degree DESC, code ASC
 LIMIT 10;</code></pre>
             </article>
+
+            <article class="try-query-card">
+              <div class="try-query-card-heading">
+                <div>
+                  <span class="query-number">07 · TRIANGLE COUNT</span>
+                  <h3>Airports inside dense route clusters</h3>
+                </div>
+                <button
+                  class="copy-button try-query-copy"
+                  type="button"
+                  data-copy-query="query-triangle-count"
+                >
+                  <svg viewBox="0 0 20 20" aria-hidden="true">
+                    <rect x="6.5" y="6.5" width="9" height="9" rx="2"></rect>
+                    <path d="M13.5 6.5v-2a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"></path>
+                  </svg>
+                  <span>Copy</span>
+                </button>
+              </div>
+              <p>Find airports participating in the most closed three-airport routes.</p>
+              <pre><code id="query-triangle-count">CALL algo.triangle_count(
+    'air_routes',
+    vertex_label := 'airport'
+)
+YIELD code, city, country, triangle_count, degree,
+      local_clustering_coefficient
+RETURN code, city, country, triangle_count, degree,
+       local_clustering_coefficient
+ORDER BY triangle_count DESC, code ASC
+LIMIT 10;</code></pre>
+            </article>
+
+            <article class="try-query-card">
+              <div class="try-query-card-heading">
+                <div>
+                  <span class="query-number">08 · STRONGLY CONNECTED COMPONENTS</span>
+                  <h3>Small mutually reachable route islands</h3>
+                </div>
+                <button
+                  class="copy-button try-query-copy"
+                  type="button"
+                  data-copy-query="query-strong-components"
+                >
+                  <svg viewBox="0 0 20 20" aria-hidden="true">
+                    <rect x="6.5" y="6.5" width="9" height="9" rx="2"></rect>
+                    <path d="M13.5 6.5v-2a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"></path>
+                  </svg>
+                  <span>Copy</span>
+                </button>
+              </div>
+              <p>Reveal the smallest groups whose airports can all reach one another.</p>
+              <pre><code id="query-strong-components">CALL algo.scc(
+    'air_routes',
+    vertex_label := 'airport'
+)
+YIELD code, city, country, component_id, component_size
+RETURN code, city, country, component_id, component_size
+ORDER BY component_size ASC, code ASC
+LIMIT 20;</code></pre>
+            </article>
           </div>
         </section>
 
