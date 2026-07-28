@@ -4,9 +4,13 @@ The fastest way to explore DuckGQL is the
 [browser playground](https://duckgql.com/). It runs DuckDB-Wasm, DuckGQL, and
 the sample graph locally in your browser.
 
+On phones, the playground uses a touch-friendly query editor with a Run button
+and inline results instead of requiring input through the terminal's hidden
+text field.
+
 ## Build from source
 
-DuckGQL currently targets DuckDB `v1.5.4` and uses C++17 and ANTLR `4.13.2`.
+DuckGQL currently targets DuckDB `v1.5.5` and uses C++17 and ANTLR `4.13.2`.
 
 ```sh
 git clone --recurse-submodules https://github.com/rahul-iyer/duckdb-gql.git

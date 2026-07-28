@@ -35,6 +35,17 @@ Implemented algorithm families include BFS, DFS, unweighted SSSP, PageRank,
 weak and strong components, degree, closeness, local clustering coefficient,
 and triangle counting. Weighted SSSP is not implemented.
 
+Algorithm output can yield properties from the participating vertices directly.
+For example, if the `social` graph has a `name` property:
+
+```sql
+CALL algo.degree('social')
+YIELD name, out_degree, in_degree, total_degree
+RETURN name, out_degree, in_degree, total_degree
+ORDER BY total_degree DESC, name ASC
+LIMIT 10;
+```
+
 ## Inspect adjacency and statistics
 
 ```sql

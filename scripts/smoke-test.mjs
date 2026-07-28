@@ -7,11 +7,15 @@ const demoRoot = fileURLToPath(new URL("../", import.meta.url));
 const bundle = {
   eh: {
     mainModule: fileURLToPath(
-      import.meta.resolve("@duckdb/duckdb-wasm/dist/duckdb-eh.wasm")
+      new URL(
+        "../public/duckdb-wasm-runtime/v1.5.5/duckdb-eh.wasm",
+        import.meta.url
+      )
     ),
-    mainWorker: import.meta.resolve(
-      "@duckdb/duckdb-wasm/dist/duckdb-node-eh.worker.cjs"
-    )
+    mainWorker: new URL(
+      "./runtime/v1.5.5/duckdb-node-eh.worker.cjs",
+      import.meta.url
+    ).href
   }
 };
 
@@ -29,6 +33,11 @@ try {
     await connection.query("LOAD duckgql");
     const version = await connection.query("SELECT version()");
     console.log(version.toString());
+    await connection.query(`
+      DROP GRAPH IF EXISTS mobile_editor_smoke;
+      CREATE GRAPH mobile_editor_smoke ANY;
+    `);
+    await connection.query("DROP GRAPH mobile_editor_smoke");
     await db.registerFileBuffer(
       "air-routes-nodes.csv",
       new Uint8Array(
@@ -106,12 +115,23 @@ try {
           max_iterations := 100,
           tolerance := 1e-8
       )
-      YIELD vertex_id, rank
-      RETURN vertex_id, rank
+      YIELD code, city, country, rank
+      RETURN code, city, country, rank
       ORDER BY rank DESC
-      LIMIT 1
+      LIMIT 10
     `);
     console.log(pageRank.toString());
+    const degree = await connection.query(`
+      CALL algo.degree(
+          'air_routes',
+          vertex_label := 'airport'
+      )
+      YIELD code, city, country, out_degree, in_degree, total_degree
+      RETURN code, city, country, out_degree, in_degree, total_degree
+      ORDER BY total_degree DESC, code ASC
+      LIMIT 10
+    `);
+    console.log(degree.toString());
   } finally {
     await connection.close();
   }

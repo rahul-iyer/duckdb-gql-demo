@@ -1,13 +1,24 @@
 import * as duckdb from "@duckdb/duckdb-wasm";
 import * as shell from "@duckdb/duckdb-wasm-shell";
-import duckdbEhWasm from "@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url";
-import duckdbEhWorker from "@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url";
 import shellWasm from "@duckdb/duckdb-wasm-shell/dist/shell_bg.wasm?url";
 import "xterm/css/xterm.css";
 import { initializeAnalytics, trackEvent } from "./analytics";
 import "./styles.css";
 
 initializeAnalytics();
+
+const publicBaseUrl = new URL(import.meta.env.BASE_URL, window.location.href);
+const duckdbEhWasm = new URL(
+  "duckdb-wasm-runtime/v1.5.5/duckdb-eh.wasm",
+  publicBaseUrl
+).href;
+const duckdbEhWorker = new URL(
+  "duckdb-wasm-runtime/v1.5.5/duckdb-browser-eh.worker.js",
+  publicBaseUrl
+).href;
+const mobileWorkspaceMedia = window.matchMedia(
+  "(max-width: 720px), (hover: none) and (pointer: coarse)"
+);
 
 const CREATE_GRAPH_QUERY = `DROP GRAPH IF EXISTS air_routes;
 CREATE GRAPH air_routes ANY;`;
@@ -34,8 +45,8 @@ const PAGERANK_QUERY = `CALL algo.pagerank(
     max_iterations := 100,
     tolerance := 1e-8
 )
-YIELD vertex_id, rank
-RETURN vertex_id, rank
+YIELD code, city, country, rank
+RETURN code, city, country, rank
 ORDER BY rank DESC
 LIMIT 10;`;
 
@@ -57,6 +68,16 @@ function requiredElement<T extends Element>(selector: string): T {
 const statusText = requiredElement<HTMLSpanElement>("#status-text");
 const statusDot = requiredElement<HTMLSpanElement>("#status-dot");
 const shellContainer = requiredElement<HTMLDivElement>("#shell");
+const mobileQueryEditor =
+  requiredElement<HTMLTextAreaElement>("#mobile-query-editor");
+const mobileQueryRunButton =
+  requiredElement<HTMLButtonElement>("#run-mobile-query");
+const mobileQueryClearButton =
+  requiredElement<HTMLButtonElement>("#clear-mobile-query");
+const mobileQueryStatus =
+  requiredElement<HTMLSpanElement>("#mobile-query-status");
+const mobileQueryResult =
+  requiredElement<HTMLPreElement>("#mobile-query-result");
 const startupError = requiredElement<HTMLDivElement>("#startup-error");
 const errorDetail = requiredElement<HTMLPreElement>("#error-detail");
 const copyButton = requiredElement<HTMLButtonElement>("#copy-query");
@@ -101,6 +122,7 @@ const demoStepButtons = [
 ];
 
 let activeDatabase: duckdb.AsyncDuckDB | null = null;
+let mobileConnection: duckdb.AsyncDuckDBConnection | null = null;
 let airRoutesFilesRegistered = false;
 
 function setStatus(message: string, state: "loading" | "ready" | "error") {
@@ -114,9 +136,80 @@ function formatError(error: unknown): string {
 }
 
 function focusShellInput(): void {
-  shellContainer
-    .querySelector<HTMLTextAreaElement>(".xterm-helper-textarea")
-    ?.focus({ preventScroll: true });
+  if (mobileWorkspaceMedia.matches) {
+    return;
+  }
+  const textarea =
+    shellContainer.querySelector<HTMLTextAreaElement>(".xterm-helper-textarea");
+  if (!textarea) {
+    return;
+  }
+  textarea.autocapitalize = "off";
+  textarea.autocomplete = "off";
+  textarea.setAttribute("autocorrect", "off");
+  textarea.spellcheck = false;
+  textarea.focus({ preventScroll: true });
+}
+
+function installShellViewportHandling(): void {
+  const resizeShell = () => {
+    const rect = shellContainer.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      shellContainer.onresize?.(new UIEvent("resize"));
+    }
+  };
+  const resizeObserver = new ResizeObserver(resizeShell);
+  resizeObserver.observe(shellContainer);
+  window.visualViewport?.addEventListener("resize", resizeShell);
+  window.visualViewport?.addEventListener("scroll", resizeShell);
+  window.addEventListener("orientationchange", resizeShell);
+  resizeShell();
+}
+
+function formatQueryResult(result: { numRows: number; toString(): string }) {
+  if (result.numRows === 0) {
+    return "Query completed successfully.";
+  }
+  return result.toString();
+}
+
+async function runMobileQuery(): Promise<void> {
+  const query = mobileQueryEditor.value.trim();
+  if (!query) {
+    mobileQueryStatus.textContent = "Enter a query first";
+    mobileQueryEditor.focus();
+    return;
+  }
+  if (!activeDatabase || !mobileConnection) {
+    mobileQueryStatus.textContent = "DuckDB is still loading";
+    return;
+  }
+
+  mobileQueryRunButton.disabled = true;
+  mobileQueryEditor.setAttribute("aria-busy", "true");
+  mobileQueryStatus.textContent = "Running…";
+  mobileQueryResult.textContent = "";
+
+  try {
+    if (/\bCOPY\s+GRAPH\b/i.test(query)) {
+      await registerAirRoutesFiles(activeDatabase);
+    }
+    const result = await mobileConnection.query(query);
+    mobileQueryResult.textContent = formatQueryResult(result);
+    mobileQueryStatus.textContent = `${result.numRows} row${
+      result.numRows === 1 ? "" : "s"
+    } returned`;
+    sampleResult.textContent = "Mobile query completed";
+    trackEvent("mobile_query_completed");
+  } catch (error: unknown) {
+    mobileQueryResult.textContent = formatError(error);
+    mobileQueryStatus.textContent = "Query failed";
+    sampleResult.textContent = "Mobile query failed";
+    trackEvent("mobile_query_failed");
+  } finally {
+    mobileQueryRunButton.disabled = false;
+    mobileQueryEditor.removeAttribute("aria-busy");
+  }
 }
 
 async function loadDuckGql(db: duckdb.AsyncDuckDB): Promise<void> {
@@ -185,15 +278,21 @@ async function startPlayground(): Promise<void> {
   setStatus("Loading DuckGQL…", "loading");
   await loadDuckGql(db);
 
-  await shell.embed({
-    shellModule: shellWasm,
-    container: shellContainer,
-    backgroundColor: "#101719",
-    fontFamily: '"IBM Plex Mono", "SFMono-Regular", Consolas, monospace',
-    resolveDatabase: async () => db
-  });
+  if (!mobileWorkspaceMedia.matches) {
+    await shell.embed({
+      shellModule: shellWasm,
+      container: shellContainer,
+      backgroundColor: "#101719",
+      fontFamily: '"IBM Plex Mono", "SFMono-Regular", Consolas, monospace',
+      resolveDatabase: async () => db
+    });
+    installShellViewportHandling();
+  }
 
   activeDatabase = db;
+  mobileConnection = await db.connect();
+  mobileQueryRunButton.disabled = false;
+  mobileQueryStatus.textContent = "Ready";
   for (const button of demoStepButtons) {
     button.disabled = false;
   }
@@ -203,7 +302,7 @@ async function startPlayground(): Promise<void> {
 }
 
 shellContainer.addEventListener("pointerdown", () => {
-  window.requestAnimationFrame(focusShellInput);
+  focusShellInput();
 });
 
 async function selectDemoStep(step: DemoStep): Promise<void> {
@@ -212,6 +311,7 @@ async function selectDemoStep(step: DemoStep): Promise<void> {
   }
   selectedStepLabel.textContent = step.label;
   selectedStepQuery.textContent = step.query;
+  mobileQueryEditor.value = step.query;
   selectedStepCopyLabel.textContent = "Copy command";
   selectedStepCopyStatus.textContent = "Ready to copy";
 
@@ -297,6 +397,24 @@ moreQueriesButton.addEventListener("click", () => {
   trackEvent("more_queries_opened");
 });
 
+mobileQueryRunButton.addEventListener("click", () => {
+  void runMobileQuery();
+});
+
+mobileQueryClearButton.addEventListener("click", () => {
+  mobileQueryEditor.value = "";
+  mobileQueryResult.textContent = "Results will appear here.";
+  mobileQueryStatus.textContent = "Ready";
+  mobileQueryEditor.focus();
+});
+
+mobileQueryEditor.addEventListener("keydown", (event) => {
+  if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+    event.preventDefault();
+    void runMobileQuery();
+  }
+});
+
 if (
   window.location.hash === "#more-queries" ||
   window.location.hash === "#more-queries-title"
@@ -317,6 +435,9 @@ for (const button of document.querySelectorAll<HTMLButtonElement>(
 
     try {
       await navigator.clipboard.writeText(query.textContent ?? "");
+      if (mobileWorkspaceMedia.matches) {
+        mobileQueryEditor.value = query.textContent ?? "";
+      }
       label.textContent = "Copied";
       sampleResult.textContent = "Air Routes query copied to clipboard";
       trackEvent("query_copied", { query: queryId ?? "unknown" });

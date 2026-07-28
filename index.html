@@ -124,7 +124,7 @@
 <span class="code-keyword">LIMIT</span> 10;</code></pre>
             <div class="query-card-footer">
               <span class="command-key">↵</span>
-              Paste into the console and press Enter
+              Try it in the playground below
             </div>
           </aside>
         </section>
@@ -133,7 +133,7 @@
           id="console"
           class="console-panel"
           data-state="loading"
-          aria-label="Interactive DuckDB shell"
+          aria-label="Interactive DuckGQL playground"
         >
           <div class="console-heading">
             <div class="console-title">
@@ -147,7 +147,7 @@
                 <span class="runtime-chip-dot"></span>
                 In-memory
               </span>
-              <span>DuckDB 1.5.4</span>
+              <span>DuckDB 1.5.5</span>
               <span>Wasm EH</span>
             </div>
           </div>
@@ -241,6 +241,58 @@ CREATE GRAPH air_routes ANY;</code></pre>
           </div>
 
           <div class="console-body">
+            <section
+              id="mobile-query-workspace"
+              class="mobile-query-workspace"
+              aria-label="Mobile DuckGQL query editor"
+            >
+              <div class="mobile-query-heading">
+                <div>
+                  <span class="eyebrow">Mobile editor</span>
+                  <strong>Write and run DuckGQL</strong>
+                </div>
+                <span>⌘/Ctrl + Enter to run</span>
+              </div>
+              <label class="sr-only" for="mobile-query-editor">
+                DuckGQL query
+              </label>
+              <textarea
+                id="mobile-query-editor"
+                autocapitalize="off"
+                autocomplete="off"
+                autocorrect="off"
+                enterkeyhint="enter"
+                inputmode="text"
+                spellcheck="false"
+                wrap="off"
+              >DROP GRAPH IF EXISTS air_routes;
+CREATE GRAPH air_routes ANY;</textarea>
+              <div class="mobile-query-actions">
+                <button
+                  id="run-mobile-query"
+                  class="mobile-query-button mobile-query-button-primary"
+                  type="button"
+                  disabled
+                >
+                  Run query
+                </button>
+                <button
+                  id="clear-mobile-query"
+                  class="mobile-query-button"
+                  type="button"
+                >
+                  Clear
+                </button>
+                <span id="mobile-query-status" role="status" aria-live="polite">
+                  Waiting for DuckDB
+                </span>
+              </div>
+              <pre
+                id="mobile-query-result"
+                class="mobile-query-result"
+                aria-live="polite"
+              >Results will appear here.</pre>
+            </section>
             <div id="shell" class="shell"></div>
             <div class="console-loading" aria-hidden="true">
               <div class="loader-orbit">
@@ -282,8 +334,9 @@ CREATE GRAPH air_routes ANY;</code></pre>
               <h2 id="more-queries-title">More Air Routes queries to try</h2>
             </div>
             <p>
-              Complete Create graph and Load graph first. Then copy any query
-              below, paste it into the console, and press Enter.
+              Complete Create graph and Load graph first. Build CSR before
+              running the algorithm examples. Then copy a query, paste it into
+              the console or mobile editor, and run it.
             </p>
           </div>
 
@@ -397,6 +450,66 @@ RETURN origin.code AS airport,
        COUNT(*) AS outbound_routes
 GROUP BY origin
 ORDER BY outbound_routes DESC
+LIMIT 10;</code></pre>
+            </article>
+
+            <article class="try-query-card">
+              <div class="try-query-card-heading">
+                <div>
+                  <span class="query-number">05 · PAGERANK</span>
+                  <h3>Most influential airports</h3>
+                </div>
+                <button
+                  class="copy-button try-query-copy"
+                  type="button"
+                  data-copy-query="query-pagerank"
+                >
+                  <svg viewBox="0 0 20 20" aria-hidden="true">
+                    <rect x="6.5" y="6.5" width="9" height="9" rx="2"></rect>
+                    <path d="M13.5 6.5v-2a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"></path>
+                  </svg>
+                  <span>Copy</span>
+                </button>
+              </div>
+              <p>Rank airports by their importance in the global route network.</p>
+              <pre><code id="query-pagerank">CALL algo.pagerank(
+    'air_routes',
+    damping := 0.85,
+    max_iterations := 100,
+    tolerance := 1e-8
+)
+YIELD code, city, country, rank
+RETURN code, city, country, rank
+ORDER BY rank DESC
+LIMIT 10;</code></pre>
+            </article>
+
+            <article class="try-query-card">
+              <div class="try-query-card-heading">
+                <div>
+                  <span class="query-number">06 · DEGREE CENTRALITY</span>
+                  <h3>Best-connected airports</h3>
+                </div>
+                <button
+                  class="copy-button try-query-copy"
+                  type="button"
+                  data-copy-query="query-degree"
+                >
+                  <svg viewBox="0 0 20 20" aria-hidden="true">
+                    <rect x="6.5" y="6.5" width="9" height="9" rx="2"></rect>
+                    <path d="M13.5 6.5v-2a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"></path>
+                  </svg>
+                  <span>Copy</span>
+                </button>
+              </div>
+              <p>Compare inbound, outbound, and total direct connectivity.</p>
+              <pre><code id="query-degree">CALL algo.degree(
+    'air_routes',
+    vertex_label := 'airport'
+)
+YIELD code, city, country, out_degree, in_degree, total_degree
+RETURN code, city, country, out_degree, in_degree, total_degree
+ORDER BY total_degree DESC, code ASC
 LIMIT 10;</code></pre>
             </article>
           </div>

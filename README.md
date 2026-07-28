@@ -6,6 +6,11 @@ small example graph entirely in the browser.
 The runtime and extension both use the WebAssembly exception-handling (`eh`)
 build so C++ exceptions cross the extension boundary correctly.
 
+Desktop browsers use the embedded terminal. On narrow screens and coarse
+pointer devices, the playground switches to a mobile query editor with direct
+execution and inline results so virtual-keyboard autocorrection and terminal
+IME behavior cannot corrupt SQL input.
+
 ## Run locally
 
 ```sh
@@ -15,10 +20,11 @@ npm run dev
 
 Open <http://127.0.0.1:5173>.
 
-The demo intentionally pins both DuckDB-Wasm packages to
-`1.33.1-dev61.0`. That release uses DuckDB commit
-`08e34c447bae34eaee3723cac61f2878b6bdf787`, which matches the DuckDB
-`v1.5.4` commit used to compile `public/duckgql.duckdb_extension.wasm`.
+The browser runtime and DuckGQL extension both target DuckDB `v1.5.5`.
+The matching exception-handling DuckDB-Wasm runtime is vendored under
+`public/duckdb-wasm-runtime/v1.5.5/`. The JavaScript API remains pinned to
+`1.33.1-dev61.0` until the DuckDB-Wasm package containing the v1.5.5 runtime is
+published.
 
 ## Production build
 
@@ -73,10 +79,12 @@ identifiers.
 ## Refresh the DuckGQL Wasm artifact
 
 ```sh
-gh run download 29980569141 \
+gh run download 30325524028 \
   --repo rahul-iyer/duckdb-gql \
-  --name duckgql-v1.5.4-extension-wasm_eh \
+  --name duckgql-v1.5.5-extension-wasm_eh \
   --dir public
+cp public/duckgql.duckdb_extension.wasm \
+  public/duckdb-wasm/v1.5.5/wasm_eh/duckgql.duckdb_extension.wasm
 ```
 
 DuckDB extensions are version-specific. Update the pinned DuckDB-Wasm packages
