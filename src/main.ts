@@ -77,7 +77,7 @@ const mobileQueryClearButton =
 const mobileQueryStatus =
   requiredElement<HTMLSpanElement>("#mobile-query-status");
 const mobileQueryResult =
-  requiredElement<HTMLPreElement>("#mobile-query-result");
+  requiredElement<HTMLDivElement>("#mobile-query-result");
 const startupError = requiredElement<HTMLDivElement>("#startup-error");
 const errorDetail = requiredElement<HTMLPreElement>("#error-detail");
 const copyButton = requiredElement<HTMLButtonElement>("#copy-query");
@@ -124,6 +124,11 @@ const demoStepButtons = [
 let activeDatabase: duckdb.AsyncDuckDB | null = null;
 let mobileConnection: duckdb.AsyncDuckDBConnection | null = null;
 let airRoutesFilesRegistered = false;
+const MAX_MOBILE_RESULT_ROWS = 200;
+
+type QueryResult = Awaited<
+  ReturnType<duckdb.AsyncDuckDBConnection["query"]>
+>;
 
 function setStatus(message: string, state: "loading" | "ready" | "error") {
   statusText.textContent = message;
@@ -166,11 +171,92 @@ function installShellViewportHandling(): void {
   resizeShell();
 }
 
-function formatQueryResult(result: { numRows: number; toString(): string }) {
-  if (result.numRows === 0) {
-    return "Query completed successfully.";
+function formatCellValue(value: unknown): string {
+  if (value === null || value === undefined) {
+    return "NULL";
   }
-  return result.toString();
+  if (typeof value === "bigint") {
+    return value.toString();
+  }
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  if (value instanceof Uint8Array) {
+    return Array.from(value, (byte) => byte.toString(16).padStart(2, "0")).join(
+      ""
+    );
+  }
+  if (typeof value === "object") {
+    try {
+      return JSON.stringify(value, (_key, nestedValue) =>
+        typeof nestedValue === "bigint"
+          ? nestedValue.toString()
+          : nestedValue
+      );
+    } catch {
+      return String(value);
+    }
+  }
+  return String(value);
+}
+
+function renderQueryResult(result: QueryResult): void {
+  mobileQueryResult.replaceChildren();
+  if (result.numRows === 0) {
+    mobileQueryResult.dataset.state = "empty";
+    mobileQueryResult.textContent = "Query completed successfully.";
+    return;
+  }
+
+  mobileQueryResult.dataset.state = "table";
+  const table = document.createElement("table");
+  const caption = document.createElement("caption");
+  caption.className = "sr-only";
+  caption.textContent = "DuckGQL query results";
+  table.append(caption);
+
+  const headerRow = document.createElement("tr");
+  for (const field of result.schema.fields) {
+    const header = document.createElement("th");
+    header.scope = "col";
+    header.textContent = field.name;
+    headerRow.append(header);
+  }
+  const tableHead = document.createElement("thead");
+  tableHead.append(headerRow);
+  table.append(tableHead);
+
+  const tableBody = document.createElement("tbody");
+  const renderedRowCount = Math.min(result.numRows, MAX_MOBILE_RESULT_ROWS);
+  for (let rowIndex = 0; rowIndex < renderedRowCount; rowIndex += 1) {
+    const arrowRow = result.get(rowIndex) as
+      | { toJSON(): Record<string, unknown> }
+      | null;
+    const rowValues = arrowRow?.toJSON() ?? {};
+    const tableRow = document.createElement("tr");
+    for (const field of result.schema.fields) {
+      const value = rowValues[field.name];
+      const cell = document.createElement("td");
+      cell.textContent = formatCellValue(value);
+      if (value === null || value === undefined) {
+        cell.dataset.null = "true";
+      } else if (typeof value === "number" || typeof value === "bigint") {
+        cell.dataset.numeric = "true";
+      }
+      tableRow.append(cell);
+    }
+    tableBody.append(tableRow);
+  }
+  table.append(tableBody);
+  mobileQueryResult.append(table);
+
+  if (result.numRows > renderedRowCount) {
+    const truncatedNotice = document.createElement("p");
+    truncatedNotice.className = "mobile-query-truncated";
+    truncatedNotice.textContent =
+      `Showing ${renderedRowCount} of ${result.numRows} rows. Add LIMIT to narrow the result.`;
+    mobileQueryResult.append(truncatedNotice);
+  }
 }
 
 async function runMobileQuery(): Promise<void> {
@@ -188,20 +274,22 @@ async function runMobileQuery(): Promise<void> {
   mobileQueryRunButton.disabled = true;
   mobileQueryEditor.setAttribute("aria-busy", "true");
   mobileQueryStatus.textContent = "Running…";
-  mobileQueryResult.textContent = "";
+  mobileQueryResult.dataset.state = "loading";
+  mobileQueryResult.textContent = "Running query…";
 
   try {
     if (/\bCOPY\s+GRAPH\b/i.test(query)) {
       await registerAirRoutesFiles(activeDatabase);
     }
     const result = await mobileConnection.query(query);
-    mobileQueryResult.textContent = formatQueryResult(result);
+    renderQueryResult(result);
     mobileQueryStatus.textContent = `${result.numRows} row${
       result.numRows === 1 ? "" : "s"
     } returned`;
     sampleResult.textContent = "Mobile query completed";
     trackEvent("mobile_query_completed");
   } catch (error: unknown) {
+    mobileQueryResult.dataset.state = "error";
     mobileQueryResult.textContent = formatError(error);
     mobileQueryStatus.textContent = "Query failed";
     sampleResult.textContent = "Mobile query failed";
@@ -403,6 +491,7 @@ mobileQueryRunButton.addEventListener("click", () => {
 
 mobileQueryClearButton.addEventListener("click", () => {
   mobileQueryEditor.value = "";
+  mobileQueryResult.dataset.state = "empty";
   mobileQueryResult.textContent = "Results will appear here.";
   mobileQueryStatus.textContent = "Ready";
   mobileQueryEditor.focus();

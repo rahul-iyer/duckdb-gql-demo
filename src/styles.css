@@ -764,16 +764,87 @@ h1 span {
 .mobile-query-result {
   min-height: 118px;
   max-height: 280px;
-  margin: 0;
   overflow: auto;
   border: 1px solid var(--line);
   border-radius: 11px;
-  padding: 13px;
   background: rgba(255, 255, 255, 0.018);
-  color: var(--mint);
-  font: 400 10.5px/1.6 var(--mono);
+  color: #d9e0dc;
+  font: 400 10.5px/1.5 var(--mono);
+}
+
+.mobile-query-result[data-state="empty"],
+.mobile-query-result[data-state="loading"],
+.mobile-query-result[data-state="error"] {
+  padding: 13px;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
+}
+
+.mobile-query-result[data-state="empty"] {
+  color: var(--muted);
+}
+
+.mobile-query-result[data-state="loading"] {
+  color: var(--mint);
+}
+
+.mobile-query-result[data-state="error"] {
+  color: #ff9d94;
+}
+
+.mobile-query-result table {
+  width: 100%;
+  border-collapse: collapse;
+  font: inherit;
+  white-space: nowrap;
+}
+
+.mobile-query-result th,
+.mobile-query-result td {
+  padding: 9px 11px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.mobile-query-result th:last-child,
+.mobile-query-result td:last-child {
+  border-right: 0;
+}
+
+.mobile-query-result th {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  background: #151b1d;
+  color: var(--lime);
+  font-weight: 600;
+}
+
+.mobile-query-result tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.mobile-query-result td[data-null="true"] {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.mobile-query-result td[data-numeric="true"] {
+  color: var(--mint);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.mobile-query-truncated {
+  position: sticky;
+  bottom: 0;
+  margin: 0;
+  padding: 9px 11px;
+  border-top: 1px solid var(--line-strong);
+  background: #151b1d;
+  color: var(--muted);
 }
 
 .sr-only {
